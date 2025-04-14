@@ -1,20 +1,75 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { CdkStack } from '../lib/cdk-stack';
+import { LambdaSpeedCheckerStack } from '../lib/lambda-speed-checker-stack';
+import { exit } from 'process';
+import { DynamodbStack } from '../lib/dynamodb-stack';
+import { LambdaCheckerManagerStack } from '../lib/lambda-checker-manager-stack';
 
 const app = new cdk.App();
-new CdkStack(app, 'CdkStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+const account = app.node.tryGetContext('account') || process.env.CDK_INTEG_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
+const regions = [
+    'us-east-1',
+    'us-east-2',
+    'us-west-1',
+    'us-west-2',
+    'ap-south-1',
+    'ap-northeast-1',
+    'ap-northeast-2',
+    'ap-northeast-3',
+    'ap-southeast-1',
+    'ap-southeast-2',
+    'ca-central-1',
+    'eu-central-1',
+    'eu-west-1',
+    'eu-west-2',
+    'eu-west-3',
+    'eu-north-1',
+    'sa-east-1',
+];
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+const environment = process.env.ENVIRONMENT_DEPLOY;
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+if (!environment) {
+    console.error('No environment provided');
+    exit(-1);
+}
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
+if (environment !== 'dev' && environment !== 'production') {
+    console.error('Unsupported environment provided');
+    exit(-1);
+}
+
+console.log(`Deploying for ${environment}`);
+
+for (const region of regions) {
+    new LambdaSpeedCheckerStack(app, `Webeye-LambdaSpeedCheckerStack-${region}`, {
+        env: {
+            account: account,
+            region: region,
+        },
+        environment,
+        regionName: region,
+        repositoryName: 'webeye.checker.ecr',
+        imageTag: 'webeye.speed-checker_latest14Apr2025',
+    });
+}
+
+new DynamodbStack(app, `Webeye-DynamoDbStack-eu-central-1`, {
+    env: {
+        account: account,
+        region: 'eu-central-1',
+    },
+    environment,
+    regionName: 'eu-central-1',
+});
+
+new LambdaCheckerManagerStack(app, 'Webeye-LambdaCheckerManagerStack-eu-central-1', {
+    env: {
+        account: account,
+        region: 'eu-central-1',
+    },
+    environment,
+    regionName: 'eu-central-1',
+    repositoryName: 'webeye.ecr',
+    imageTag: 'webeye.checker-manager_latest14Apr2025',
 });
