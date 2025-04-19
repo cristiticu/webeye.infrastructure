@@ -50,7 +50,7 @@ for (const region of regions) {
         environment,
         regionName: region,
         repositoryName: 'webeye.checker.ecr',
-        imageTag: 'webeye.speed-checker_latest16Apr2025-3',
+        imageTag: 'webeye.speed-checker_latest19Apr2025-4',
     });
 }
 
