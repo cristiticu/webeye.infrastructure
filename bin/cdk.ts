@@ -4,6 +4,7 @@ import { LambdaSpeedCheckerStack } from '../lib/lambda-speed-checker-stack';
 import { exit } from 'process';
 import { DynamodbStack } from '../lib/dynamodb-stack';
 import { LambdaCheckerManagerStack } from '../lib/lambda-checker-manager-stack';
+import { LambdaSpeedCheckerDependsStack } from '../lib/lambda-speed-checker-depends-stack';
 
 const app = new cdk.App();
 const account = app.node.tryGetContext('account') || process.env.CDK_INTEG_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
@@ -50,9 +51,18 @@ for (const region of regions) {
         environment,
         regionName: region,
         repositoryName: 'webeye.checker.ecr',
-        imageTag: 'webeye.speed-checker_latest19Apr2025-4',
+        imageTag: 'webeye.speed-checker_latest21Apr2025-2',
     });
 }
+
+new LambdaSpeedCheckerDependsStack(app, 'Webeye-LambdaSpeedCheckerDependsStack-eu-central-1', {
+    env: {
+        account: account,
+        region: 'eu-central-1',
+    },
+    environment,
+    regionName: 'eu-central-1',
+});
 
 new DynamodbStack(app, `Webeye-DynamoDbStack-eu-central-1`, {
     env: {
@@ -71,5 +81,5 @@ new LambdaCheckerManagerStack(app, 'Webeye-LambdaCheckerManagerStack-eu-central-
     environment,
     regionName: 'eu-central-1',
     repositoryName: 'webeye.ecr',
-    imageTag: 'webeye.checker-manager_latest14Apr2025',
+    imageTag: 'webeye.checker-manager_latest21Apr2025-2',
 });

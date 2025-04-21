@@ -25,9 +25,14 @@ export class LambdaSpeedCheckerStack extends cdk.Stack {
         });
 
         lambdaFunctionRole.addManagedPolicy(
-            cdk.aws_iam.ManagedPolicy.fromManagedPolicyName(this, 'DynamoDB Policy for lambda', 'webeye.policy.dynamodb.stage.all_tables')
+            cdk.aws_iam.ManagedPolicy.fromManagedPolicyName(this, 'DynamoDB Policy for lambda', `webeye.policy.dynamodb.${deploymentPrefix}.all_tables`)
         );
+
         lambdaFunctionRole.addManagedPolicy(cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
+
+        lambdaFunctionRole.addManagedPolicy(
+            cdk.aws_iam.ManagedPolicy.fromManagedPolicyName(this, 'S3 Policy for lambda', `webeye.policy.s3.${deploymentPrefix}.allow_checker_buckets`)
+        );
 
         const lambdaFunction = new cdk.aws_lambda.DockerImageFunction(this, `${deploymentPrefix}_webeye-speed-checker-${this.region}`, {
             functionName: `${deploymentPrefix}_webeye-speed-checker-${this.region}`,
