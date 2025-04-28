@@ -81,5 +81,5 @@ new LambdaCheckerManagerStack(app, 'Webeye-LambdaCheckerManagerStack-eu-central-
     environment,
     regionName: 'eu-central-1',
     repositoryName: 'webeye.ecr',
-    imageTag: 'webeye.checker-manager_latest21Apr2025-2',
+    imageTag: 'webeye.checker-manager_latest28Apr2025-3',
 });
