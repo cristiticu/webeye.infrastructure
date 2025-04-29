@@ -5,6 +5,11 @@ import { exit } from 'process';
 import { DynamodbStack } from '../lib/dynamodb-stack';
 import { LambdaCheckerManagerStack } from '../lib/lambda-checker-manager-stack';
 import { LambdaSpeedCheckerDependsStack } from '../lib/lambda-speed-checker-depends-stack';
+import { LambdaDowntimeAggregatorStack } from '../lib/lambda-downtime-aggregator-stack';
+
+const LAMBDA_SPEED_CHECKER_TAG = 'webeye.speed-checker_latest29Apr2025';
+const LAMBDA_CHECKER_MANAGER_TAG = 'webeye.checker-manager_latest28Apr2025-3';
+const LAMBDA_DOWNTIME_AGGREGATOR_TAG = 'webeye.downtime-aggregator_latest29Apr2025-2';
 
 const app = new cdk.App();
 const account = app.node.tryGetContext('account') || process.env.CDK_INTEG_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
@@ -51,7 +56,7 @@ for (const region of regions) {
         environment,
         regionName: region,
         repositoryName: 'webeye.checker.ecr',
-        imageTag: 'webeye.speed-checker_latest22Apr2025-3',
+        imageTag: LAMBDA_SPEED_CHECKER_TAG,
     });
 }
 
@@ -81,5 +86,16 @@ new LambdaCheckerManagerStack(app, 'Webeye-LambdaCheckerManagerStack-eu-central-
     environment,
     regionName: 'eu-central-1',
     repositoryName: 'webeye.ecr',
-    imageTag: 'webeye.checker-manager_latest28Apr2025-3',
+    imageTag: LAMBDA_CHECKER_MANAGER_TAG,
+});
+
+new LambdaDowntimeAggregatorStack(app, 'Webeye-LambdaDowntimeAggregatorStack-eu-central-1', {
+    env: {
+        account: account,
+        region: 'eu-central-1',
+    },
+    environment,
+    regionName: 'eu-central-1',
+    repositoryName: 'webeye.ecr',
+    imageTag: LAMBDA_DOWNTIME_AGGREGATOR_TAG,
 });
