@@ -6,6 +6,7 @@ interface StackProps extends cdk.StackProps {
     environment: 'dev' | 'production';
     repositoryName: string;
     imageTag: string;
+    checkQueue: cdk.aws_sqs.Queue;
 }
 
 export class LambdaCheckerManagerStack extends cdk.Stack {
@@ -49,5 +50,11 @@ export class LambdaCheckerManagerStack extends cdk.Stack {
             role: lambdaFunctionRole,
             timeout: cdk.Duration.seconds(20),
         });
+
+        lambdaFunction.addEventSource(
+            new cdk.aws_lambda_event_sources.SqsEventSource(props.checkQueue, {
+                batchSize: 10,
+            })
+        );
     }
 }

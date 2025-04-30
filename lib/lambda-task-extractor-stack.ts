@@ -6,10 +6,11 @@ interface StackProps extends cdk.StackProps {
     environment: 'dev' | 'production';
     repositoryName: string;
     imageTag: string;
+    checkQueue: cdk.aws_sqs.Queue;
     aggregateQueue: cdk.aws_sqs.Queue;
 }
 
-export class LambdaDowntimeAggregatorStack extends cdk.Stack {
+export class LambdaTaskExtractorStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props: StackProps) {
         super(scope, id, props);
 
@@ -20,8 +21,8 @@ export class LambdaDowntimeAggregatorStack extends cdk.Stack {
             repositoryArn: `arn:aws:ecr:${props.regionName}:${this.account}:repository/${props.repositoryName}`,
         });
 
-        const lambdaFunctionRole = new cdk.aws_iam.Role(this, `webeye.role.stage.downtime-aggregator.${this.region}`, {
-            roleName: `webeye.role.stage.downtime-aggregator.${this.region}`,
+        const lambdaFunctionRole = new cdk.aws_iam.Role(this, `webeye.role.stage.task-extractor.${this.region}`, {
+            roleName: `webeye.role.stage.task-extractor.${this.region}`,
             assumedBy: new cdk.aws_iam.ServicePrincipal('lambda.amazonaws.com'),
         });
 
@@ -31,22 +32,19 @@ export class LambdaDowntimeAggregatorStack extends cdk.Stack {
 
         lambdaFunctionRole.addManagedPolicy(cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
 
-        const lambdaFunction = new cdk.aws_lambda.DockerImageFunction(this, `${deploymentPrefix}_webeye-downtime-aggregator-${this.region}`, {
-            functionName: `${deploymentPrefix}_webeye-downtime-aggregator-${this.region}`,
+        const lambdaFunction = new cdk.aws_lambda.DockerImageFunction(this, `${deploymentPrefix}_webeye-task-extractor-${this.region}`, {
+            functionName: `${deploymentPrefix}_webeye-task-extractor-${this.region}`,
             code: cdk.aws_lambda.DockerImageCode.fromEcr(repo, {
                 tagOrDigest: `${deploymentPrefix}.${props.imageTag}`,
             }),
             environment: {
                 ENVIRONMENT: 'dev',
             },
+            timeout: cdk.Duration.seconds(60),
             role: lambdaFunctionRole,
-            timeout: cdk.Duration.seconds(10),
         });
 
-        lambdaFunction.addEventSource(
-            new cdk.aws_lambda_event_sources.SqsEventSource(props.aggregateQueue, {
-                batchSize: 10,
-            })
-        );
+        props.checkQueue.grantSendMessages(lambdaFunction);
+        props.aggregateQueue.grantSendMessages(lambdaFunction);
     }
 }
