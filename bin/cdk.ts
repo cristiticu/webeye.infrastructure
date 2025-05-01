@@ -8,11 +8,12 @@ import { LambdaSpeedCheckerDependsStack } from '../lib/lambda-speed-checker-depe
 import { LambdaDowntimeAggregatorStack } from '../lib/lambda-downtime-aggregator-stack';
 import { SqsStack } from '../lib/sqs-stack';
 import { LambdaTaskExtractorStack } from '../lib/lambda-task-extractor-stack';
+import { EventBridgeMinuteSchedulerStack } from '../lib/eventbridge-stack';
 
-const LAMBDA_SPEED_CHECKER_TAG = 'webeye.speed-checker_latest29Apr2025';
-const LAMBDA_CHECKER_MANAGER_TAG = 'webeye.checker-manager_latest30Apr2025';
-const LAMBDA_DOWNTIME_AGGREGATOR_TAG = 'webeye.downtime-aggregator_latest30Apr2025-2';
-const LAMBDA_TASK_EXTRACTOR_TAG = 'webeye.task-extractor_latest30Apr2025-2';
+const LAMBDA_SPEED_CHECKER_TAG = 'webeye.speed-checker_latest1May2025';
+const LAMBDA_CHECKER_MANAGER_TAG = 'webeye.checker-manager_latest1May2025-2';
+const LAMBDA_DOWNTIME_AGGREGATOR_TAG = 'webeye.downtime-aggregator_latest1May2025';
+const LAMBDA_TASK_EXTRACTOR_TAG = 'webeye.task-extractor_latest1May2025';
 
 const app = new cdk.App();
 const account = app.node.tryGetContext('account') || process.env.CDK_INTEG_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
@@ -114,7 +115,7 @@ new LambdaDowntimeAggregatorStack(app, 'Webeye-LambdaDowntimeAggregatorStack-eu-
     aggregateQueue: sqsStack.aggregateQueue,
 });
 
-new LambdaTaskExtractorStack(app, 'Webeye-LambdaTaskExtractorStack-eu-central-1', {
+const taskExtractor = new LambdaTaskExtractorStack(app, 'Webeye-LambdaTaskExtractorStack-eu-central-1', {
     env: {
         account: account,
         region: 'eu-central-1',
@@ -125,4 +126,14 @@ new LambdaTaskExtractorStack(app, 'Webeye-LambdaTaskExtractorStack-eu-central-1'
     imageTag: LAMBDA_TASK_EXTRACTOR_TAG,
     aggregateQueue: sqsStack.aggregateQueue,
     checkQueue: sqsStack.checkQueue,
+});
+
+new EventBridgeMinuteSchedulerStack(app, 'Webeye-EventBridgeMinuteScheduler-eu-central-1', {
+    env: {
+        account: account,
+        region: 'eu-central-1',
+    },
+    environment,
+    regionName: 'eu-central-1',
+    function: taskExtractor.taskExtractorLambdaFunction,
 });

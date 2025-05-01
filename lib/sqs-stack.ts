@@ -25,7 +25,7 @@ export class SqsStack extends cdk.Stack {
         this.aggregateQueue = new cdk.aws_sqs.Queue(this, `${deploymentPrefix}_webeye-aggregate-queue`, {
             queueName: `${deploymentPrefix}_webeye-aggregate-queue`,
             visibilityTimeout: cdk.Duration.seconds(30),
-            deliveryDelay: cdk.Duration.seconds(30),
+            deliveryDelay: cdk.Duration.seconds(50),
             retentionPeriod: cdk.Duration.minutes(5),
             receiveMessageWaitTime: cdk.Duration.seconds(20),
         });

@@ -11,6 +11,8 @@ interface StackProps extends cdk.StackProps {
 }
 
 export class LambdaTaskExtractorStack extends cdk.Stack {
+    public readonly taskExtractorLambdaFunction: cdk.aws_lambda.DockerImageFunction;
+
     constructor(scope: Construct, id: string, props: StackProps) {
         super(scope, id, props);
 
@@ -32,7 +34,7 @@ export class LambdaTaskExtractorStack extends cdk.Stack {
 
         lambdaFunctionRole.addManagedPolicy(cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
 
-        const lambdaFunction = new cdk.aws_lambda.DockerImageFunction(this, `${deploymentPrefix}_webeye-task-extractor-${this.region}`, {
+        this.taskExtractorLambdaFunction = new cdk.aws_lambda.DockerImageFunction(this, `${deploymentPrefix}_webeye-task-extractor-${this.region}`, {
             functionName: `${deploymentPrefix}_webeye-task-extractor-${this.region}`,
             code: cdk.aws_lambda.DockerImageCode.fromEcr(repo, {
                 tagOrDigest: `${deploymentPrefix}.${props.imageTag}`,
@@ -44,7 +46,7 @@ export class LambdaTaskExtractorStack extends cdk.Stack {
             role: lambdaFunctionRole,
         });
 
-        props.checkQueue.grantSendMessages(lambdaFunction);
-        props.aggregateQueue.grantSendMessages(lambdaFunction);
+        props.checkQueue.grantSendMessages(this.taskExtractorLambdaFunction);
+        props.aggregateQueue.grantSendMessages(this.taskExtractorLambdaFunction);
     }
 }
