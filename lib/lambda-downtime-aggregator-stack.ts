@@ -40,6 +40,7 @@ export class LambdaDowntimeAggregatorStack extends cdk.Stack {
                 ENVIRONMENT: 'dev',
             },
             role: lambdaFunctionRole,
+            memorySize: 164,
             timeout: cdk.Duration.seconds(10),
         });
 

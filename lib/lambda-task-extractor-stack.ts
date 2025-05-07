@@ -43,6 +43,7 @@ export class LambdaTaskExtractorStack extends cdk.Stack {
                 ENVIRONMENT: 'dev',
             },
             timeout: cdk.Duration.seconds(60),
+            memorySize: 148,
             role: lambdaFunctionRole,
         });
 

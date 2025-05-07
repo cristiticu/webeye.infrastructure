@@ -45,7 +45,7 @@ export class LambdaSpeedCheckerStack extends cdk.Stack {
                 HOME: '/tmp',
             },
             timeout: cdk.Duration.seconds(150),
-            memorySize: 512,
+            memorySize: 764,
             role: lambdaFunctionRole,
         });
     }

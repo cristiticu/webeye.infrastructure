@@ -48,6 +48,7 @@ export class LambdaCheckerManagerStack extends cdk.Stack {
                 ENVIRONMENT: 'dev',
             },
             role: lambdaFunctionRole,
+            memorySize: 256,
             timeout: cdk.Duration.seconds(20),
         });
 
