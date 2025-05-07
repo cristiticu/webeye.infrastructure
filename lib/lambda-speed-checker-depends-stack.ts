@@ -48,6 +48,7 @@ export class LambdaSpeedCheckerDependsStack extends cdk.Stack {
                 }),
                 viewerProtocolPolicy: cdk.aws_cloudfront.ViewerProtocolPolicy.ALLOW_ALL,
             },
+            priceClass: cdk.aws_cloudfront.PriceClass.PRICE_CLASS_100,
         });
 
         screenshotsBucket.addToResourcePolicy(
@@ -76,6 +77,7 @@ export class LambdaSpeedCheckerDependsStack extends cdk.Stack {
                 }),
                 viewerProtocolPolicy: cdk.aws_cloudfront.ViewerProtocolPolicy.ALLOW_ALL,
             },
+            priceClass: cdk.aws_cloudfront.PriceClass.PRICE_CLASS_100,
         });
 
         harFilesBucket.addToResourcePolicy(

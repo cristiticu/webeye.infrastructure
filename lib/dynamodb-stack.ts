@@ -92,6 +92,7 @@ export class DynamodbStack extends cdk.Stack {
                 name: 's_key',
                 type: cdk.aws_dynamodb.AttributeType.STRING,
             },
+            timeToLiveAttribute: 'ttl',
             tableClass: cdk.aws_dynamodb.TableClass.STANDARD,
             billing: cdk.aws_dynamodb.Billing.onDemand(),
             removalPolicy: cdk.RemovalPolicy.DESTROY,
