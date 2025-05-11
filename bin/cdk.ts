@@ -11,8 +11,8 @@ import { LambdaTaskExtractorStack } from '../lib/lambda-task-extractor-stack';
 import { EventBridgeMinuteSchedulerStack } from '../lib/eventbridge-stack';
 
 const LAMBDA_SPEED_CHECKER_TAG = 'webeye.speed-checker_latest7May2025';
-const LAMBDA_CHECKER_MANAGER_TAG = 'webeye.checker-manager_latest1May2025-3';
-const LAMBDA_DOWNTIME_AGGREGATOR_TAG = 'webeye.downtime-aggregator_latest1May2025';
+const LAMBDA_CHECKER_MANAGER_TAG = 'webeye.checker-manager_latest11May2025';
+const LAMBDA_DOWNTIME_AGGREGATOR_TAG = 'webeye.downtime-aggregator_latest11May2025';
 const LAMBDA_TASK_EXTRACTOR_TAG = 'webeye.task-extractor_latest1May2025';
 
 const app = new cdk.App();

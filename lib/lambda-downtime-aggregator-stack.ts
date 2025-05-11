@@ -31,6 +31,10 @@ export class LambdaDowntimeAggregatorStack extends cdk.Stack {
 
         lambdaFunctionRole.addManagedPolicy(cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
 
+        lambdaFunctionRole.addManagedPolicy(
+            cdk.aws_iam.ManagedPolicy.fromManagedPolicyName(this, 'SES policy for lambda', `webeye.policy.ses.${deploymentPrefix}.allow_send_emails`)
+        );
+
         const lambdaFunction = new cdk.aws_lambda.DockerImageFunction(this, `${deploymentPrefix}_webeye-downtime-aggregator-${this.region}`, {
             functionName: `${deploymentPrefix}_webeye-downtime-aggregator-${this.region}`,
             code: cdk.aws_lambda.DockerImageCode.fromEcr(repo, {
@@ -38,6 +42,7 @@ export class LambdaDowntimeAggregatorStack extends cdk.Stack {
             }),
             environment: {
                 ENVIRONMENT: 'dev',
+                BACKEND_BASE_URL: 'https://webeye.cristit.icu',
             },
             role: lambdaFunctionRole,
             memorySize: 164,
