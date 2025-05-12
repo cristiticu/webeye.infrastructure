@@ -43,6 +43,7 @@ export class LambdaSpeedCheckerStack extends cdk.Stack {
                 ENVIRONMENT: 'dev',
                 PLAYWRIGHT_BROWSERS_PATH: '/ms-playwright',
                 HOME: '/tmp',
+                EVENT_BASE_RETENTION_DAYS: '1',
             },
             timeout: cdk.Duration.seconds(150),
             memorySize: 764,
