@@ -9,6 +9,7 @@ import { LambdaDowntimeAggregatorStack } from '../lib/lambda-downtime-aggregator
 import { SqsStack } from '../lib/sqs-stack';
 import { LambdaTaskExtractorStack } from '../lib/lambda-task-extractor-stack';
 import { EventBridgeMinuteSchedulerStack } from '../lib/eventbridge-stack';
+import { CloudfrontFrontendStack } from '../lib/cloudfront-frontend-stack';
 
 const LAMBDA_SPEED_CHECKER_TAG = 'webeye.speed-checker_latest7May2025';
 const LAMBDA_CHECKER_MANAGER_TAG = 'webeye.checker-manager_latest11May2025';
@@ -136,4 +137,14 @@ new EventBridgeMinuteSchedulerStack(app, 'Webeye-EventBridgeMinuteScheduler-eu-c
     environment,
     regionName: 'eu-central-1',
     function: taskExtractor.taskExtractorLambdaFunction,
+});
+
+new CloudfrontFrontendStack(app, 'Webeye-CloudFrontFrontend-eu-central-1', {
+    env: {
+        account: account,
+        region: 'eu-central-1',
+    },
+    environment,
+    regionName: 'eu-central-1',
+    harCertificate: 'ef63e2d4-1dc3-4b50-9328-59013bbdc7f0',
 });
