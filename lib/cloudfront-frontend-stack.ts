@@ -5,6 +5,7 @@ interface StackProps extends cdk.StackProps {
     regionName: string;
     environment: 'dev' | 'production';
     harCertificate: string;
+    frontendCertificate: string;
 }
 
 export class CloudfrontFrontendStack extends cdk.Stack {
@@ -14,7 +15,7 @@ export class CloudfrontFrontendStack extends cdk.Stack {
         const deploymentPrefix = props.environment === 'dev' ? 'stage' : 'production';
 
         const bucketsCors = {
-            allowedMethods: [cdk.aws_s3.HttpMethods.GET, cdk.aws_s3.HttpMethods.HEAD, cdk.aws_s3.HttpMethods.POST, cdk.aws_s3.HttpMethods.PUT],
+            allowedMethods: [cdk.aws_s3.HttpMethods.GET, cdk.aws_s3.HttpMethods.HEAD],
             allowedOrigins: ['*'],
             allowedHeaders: ['*'],
             maxAge: 60 * 30,
@@ -42,7 +43,7 @@ export class CloudfrontFrontendStack extends cdk.Stack {
             originAccessControlName: `${deploymentPrefix}.webeye.oac.har-viewer`,
         });
 
-        const certificate = cdk.aws_certificatemanager.Certificate.fromCertificateArn(
+        const harViewerCertificate = cdk.aws_certificatemanager.Certificate.fromCertificateArn(
             this,
             'WebeyeCert',
             `arn:aws:acm:us-east-1:${this.account}:certificate/${props.harCertificate}`
@@ -56,7 +57,7 @@ export class CloudfrontFrontendStack extends cdk.Stack {
                 viewerProtocolPolicy: cdk.aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             },
             domainNames: ['har.webeye.cristit.icu'],
-            certificate,
+            certificate: harViewerCertificate,
             priceClass: cdk.aws_cloudfront.PriceClass.PRICE_CLASS_100,
         });
 
@@ -70,6 +71,43 @@ export class CloudfrontFrontendStack extends cdk.Stack {
                 conditions: {
                     StringEquals: {
                         'AWS:SourceArn': `arn:aws:cloudfront::${this.account}:distribution/${harViewerCloudfront.distributionId}`,
+                    },
+                },
+            })
+        );
+
+        const frontendOac = new cdk.aws_cloudfront.S3OriginAccessControl(this, 'frontendOac', {
+            originAccessControlName: `${deploymentPrefix}.webeye.oac.frontend`,
+        });
+
+        const frontendCertificate = cdk.aws_certificatemanager.Certificate.fromCertificateArn(
+            this,
+            'WebeyeFrontendCert',
+            `arn:aws:acm:us-east-1:${this.account}:certificate/${props.frontendCertificate}`
+        );
+
+        const frontendCloudfront = new cdk.aws_cloudfront.Distribution(this, 'frontendCloudfront', {
+            defaultBehavior: {
+                origin: cdk.aws_cloudfront_origins.S3BucketOrigin.withOriginAccessControl(frontendBucket, {
+                    originAccessControl: frontendOac,
+                }),
+                viewerProtocolPolicy: cdk.aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            },
+            domainNames: ['webeye.cristit.icu'],
+            certificate: frontendCertificate,
+            priceClass: cdk.aws_cloudfront.PriceClass.PRICE_CLASS_100,
+        });
+
+        frontendBucket.addToResourcePolicy(
+            new cdk.aws_iam.PolicyStatement({
+                sid: 'AllowCloudFrontAccessOAC',
+                effect: cdk.aws_iam.Effect.ALLOW,
+                principals: [new cdk.aws_iam.ServicePrincipal('cloudfront.amazonaws.com')],
+                actions: ['s3:GetObject'],
+                resources: [`${frontendBucket.bucketArn}/*`],
+                conditions: {
+                    StringEquals: {
+                        'AWS:SourceArn': `arn:aws:cloudfront::${this.account}:distribution/${frontendCloudfront.distributionId}`,
                     },
                 },
             })

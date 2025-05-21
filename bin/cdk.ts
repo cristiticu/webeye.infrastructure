@@ -10,11 +10,13 @@ import { SqsStack } from '../lib/sqs-stack';
 import { LambdaTaskExtractorStack } from '../lib/lambda-task-extractor-stack';
 import { EventBridgeMinuteSchedulerStack } from '../lib/eventbridge-stack';
 import { CloudfrontFrontendStack } from '../lib/cloudfront-frontend-stack';
+import { LambdaBackendStack } from '../lib/lambda-backend-stack';
 
 const LAMBDA_SPEED_CHECKER_TAG = 'webeye.speed-checker_latest7May2025';
 const LAMBDA_CHECKER_MANAGER_TAG = 'webeye.checker-manager_latest11May2025';
 const LAMBDA_DOWNTIME_AGGREGATOR_TAG = 'webeye.downtime-aggregator_latest11May2025';
 const LAMBDA_TASK_EXTRACTOR_TAG = 'webeye.task-extractor_latest1May2025';
+const LAMBDA_BACKEND_TAG = 'webeye.backend_latest21May2025';
 
 const app = new cdk.App();
 const account = app.node.tryGetContext('account') || process.env.CDK_INTEG_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
@@ -147,4 +149,17 @@ new CloudfrontFrontendStack(app, 'Webeye-CloudFrontFrontend-eu-central-1', {
     environment,
     regionName: 'eu-central-1',
     harCertificate: 'ef63e2d4-1dc3-4b50-9328-59013bbdc7f0',
+    frontendCertificate: 'dd58e96a-1580-49f7-9891-cbf288f5d34d',
+});
+
+new LambdaBackendStack(app, 'Webeye-BackendStack-eu-central-1', {
+    env: {
+        account: account,
+        region: 'eu-central-1',
+    },
+    environment,
+    regionName: 'eu-central-1',
+    repositoryName: 'webeye.ecr',
+    backendCertificate: 'ef63e2d4-1dc3-4b50-9328-59013bbdc7f0',
+    imageTag: LAMBDA_BACKEND_TAG,
 });
